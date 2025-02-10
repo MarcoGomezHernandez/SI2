@@ -54,7 +54,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     # desactivate csrf middleware
     # dont do this with production software
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # desactivado porque estoy probando en la vm2 en produccion con gunicorn
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

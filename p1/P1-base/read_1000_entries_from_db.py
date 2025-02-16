@@ -11,7 +11,7 @@ db_config = {
     'user': 'alumnodb',  # Reemplaza con tu usuario de PostgreSQL
     'password': 'alumnodb',  # Reemplaza con tu contrasegna
     'host': 'localhost',  # Cambia si el host es diferente
-    'port': 432,  # Cambia si tu puerto es diferente
+    'port': 15432,  # Cambia si tu puerto es diferente
     }
 
 try:

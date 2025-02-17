@@ -15,16 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from votoAppWSServer.views import (
-    aportarinfo_censo, 
-    aportarinfo_voto, 
-    getvotos, 
-    delvoto
-)
+from votoAppWSServer.views import (CensoView, VotoView, ProcesoElectoralView)
 
 urlpatterns = [
-    path("censo/", aportarinfo_censo, name="censo"),
-    path("voto/", aportarinfo_voto, name="voto"),
-    path("procesoelectoral/", getvotos, name="procesoelectoral"),
-    path("voto/eliminar/", delvoto, name="eliminar_voto"),
-]
+    # check if person is in "censo"
+    path('censo/', CensoView.as_view(), name='censo'),
+    # create "voto"
+    path('voto/', VotoView.as_view(), name='voto'),
+    # get list of "votos" associated with a given idProcesoElectoral
+    path('procesoelectoral/<str:idProcesoElectoral>/', ProcesoElectoralView.as_view(), name='procesoelectoral'),
+    # delete "voto" with id id_voto
+    path('voto/<str:id_voto>/', VotoView.as_view(), name='voto'),
+    ]

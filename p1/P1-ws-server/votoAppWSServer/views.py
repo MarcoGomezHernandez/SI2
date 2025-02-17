@@ -1,89 +1,115 @@
-from django.forms.models import model_to_dict
-from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from django.http import Http404
+from .serializers import CensoSerializer, VotoSerializer
 from .models import Censo, Voto
-from .serializers import VotoSerializer
-from .votoDB import registrar_voto, eliminar_voto, verificar_censo
+from django.forms.models import model_to_dict
 
-@api_view(['POST'])
-def aportarinfo_censo(request):
-    """
-    Endpoint para validar la existencia del votante en el censo.
-    Recibe la información del votante en el request.data.
-    Devuelve HTTP_200_OK y un mensaje de éxito si el votante existe;
-    o HTTP_404_NOT_FOUND si no se encuentra.
-    """
-    censo_data = request.data
-    if verificar_censo(censo_data):
-        return Response({'message': 'Votante encontrado en el Censo.'},
-                        status=status.HTTP_200_OK)
-    return Response({'message': 'Datos no encontrados en Censo.'},
-                    status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['POST'])
-def aportarinfo_voto(request):
+class CensoView(APIView):
     """
-    Endpoint para registrar un voto.
-    Recibe en el request.data la información del voto, que debe incluir
-    el identificador de censo (numeroDNI o censo) del votante.
-    Devuelve:
-      - HTTP_200_OK y el voto registrado tras serialización si todo es correcto,
-      - HTTP_404_NOT_FOUND si el votante no se encuentra en el censo,
-      - HTTP_400_BAD_REQUEST en el resto de los casos.
+    API endpoint to collect censo information.
+    and check if the person is in the censo.
     """
-    voto_data = request.data
-    numero_dni = voto_data.get('censo', None)
-    if not numero_dni:
-        return Response({'message': 'Identificador de censo no proporcionado.'},
-                        status=status.HTTP_400_BAD_REQUEST)
-    if not Censo.objects.filter(numeroDNI=numero_dni).exists():
-        return Response({'message': 'Votante no existe en el Censo.'},
-                        status=status.HTTP_404_NOT_FOUND)
-    voto = registrar_voto(voto_data)
-    if voto is None:
-        return Response({'message': 'Error registrando voto.'},
-                        status=status.HTTP_400_BAD_REQUEST)
-    return Response(model_to_dict(voto), status=status.HTTP_200_OK)
+    def post(self, request, format=None):
+        data = request.data
 
-@api_view(['GET'])
-def getvotos(request):
-    """
-    Endpoint para consultar los votos de un proceso electoral.
-    Se debe enviar el identificador del proceso electoral como parámetro
-    'idProcesoElectoral' en la query string.
-    Devuelve:
-      - HTTP_200_OK y el listado de votos (serializados) si se encuentran registros,
-      - HTTP_404_NOT_FOUND si no hay votos asociados.
-    """
-    id_proceso = request.GET.get('idProcesoElectoral', None)
-    if not id_proceso:
-        return Response({'message': 'idProcesoElectoral no proporcionado.'},
-                        status=status.HTTP_400_BAD_REQUEST)
-    votos = Voto.objects.filter(idProcesoElectoral=id_proceso)
-    if not votos.exists():
-        return Response({'message': 'No existen votos para este proceso electoral.'},
-                        status=status.HTTP_404_NOT_FOUND)
-    serializer = VotoSerializer(votos, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+        numero_dni = data.get('numeroDNI')
+        nombre = data.get('nombre')
+        fecha_nacimiento = data.get('fechaNacimiento')
+        codigo_autorizacion = data.get('codigoAutorizacion')
 
-@api_view(['DELETE'])
-def delvoto(request):
+        try:
+            censo = Censo.objects.get(numeroDNI=numero_dni)
+
+            if (censo.nombre == nombre and censo.fechaNacimiento == fecha_nacimiento and censo.codigoAutorizacion == codigo_autorizacion):
+                return Response({'message': 'Datos encontrados en Censo.'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'Datos no encontrados en Censo.'}, status=status.HTTP_404_NOT_FOUND)
+        except Censo.DoesNotExist:
+            return Response({'message': 'Datos no encontrados en Censo.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class VotoView(APIView):
     """
-    Endpoint para eliminar un voto.
-    Se debe enviar el identificador del voto como parámetro 'idVoto'
-    en la query string.
-    Devuelve:
-      - HTTP_200_OK y un mensaje de éxito si se elimina el voto,
-      - HTTP_404_NOT_FOUND si no existe el voto.
+    API endpoint to collect voto information.
+    and save it in the database.
     """
-    id_voto = request.GET.get('idVoto', None)
-    if not id_voto:
-        return Response({'message': 'idVoto no proporcionado.'},
-                        status=status.HTTP_400_BAD_REQUEST)
-    if not Voto.objects.filter(pk=id_voto).exists():
-        return Response({'message': 'El voto no existe.'},
-                        status=status.HTTP_404_NOT_FOUND)
-    eliminar_voto(id_voto)
-    return Response({'message': 'Voto eliminado correctamente.'},
-                    status=status.HTTP_200_OK)
+    def post(self, request, format=None):
+        censo_id = request.data.get('censo_id')
+
+        try:
+            censo = Censo.objects.get(pk=censo_id)
+        except Censo.DoesNotExist:
+            return Response(
+                {'message': 'Entry not found in Censo.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Crear un diccionario con los datos recibidos
+        voto_data = {
+            "idCircunscripcion": request.data.get("idCircunscripcion"),
+            "idMesaElectoral": request.data.get("idMesaElectoral"),
+            "idProcesoElectoral": request.data.get("idProcesoElectoral"),
+            "nombreCandidatoVotado": request.data.get("nombreCandidatoVotado"),
+            "censo": censo.pk  # Pasar solo el ID si el campo es una FK
+        }
+
+        # Pasar los datos al serializador
+        voto_serializer = VotoSerializer(data=voto_data)
+
+        if voto_serializer.is_valid():
+            voto_serializer.save(censo=censo)
+            # Convertimos el voto en un diccionario para retornarlo
+            voto_dict = voto_serializer.data
+            return Response(voto_dict, status=status.HTTP_200_OK)
+        else:
+            # Si los datos no son válidos, devolvemos un error
+            return Response(
+                {'message': 'Bad request, invalid data.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    """
+    API endpoint to delete a voto.
+    """
+    def delete(self, request, id_voto, format=None):
+        # Intentamos obtener el voto a eliminar por su identificador
+        try:
+            voto = Voto.objects.get(id=int(id_voto))
+        except Voto.DoesNotExist:
+            # Si el voto no existe, devolvemos un error con estado HTTP_404_NOT_FOUND
+            return Response(
+                {'message': 'Voto not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Si el voto existe, lo eliminamos
+        voto.delete()
+
+        # Devolvemos una respuesta con el estado HTTP_200_OK
+        return Response(
+            {'message': 'Voto deleted successfully.'},
+            status=status.HTTP_200_OK
+        )
+
+
+class ProcesoElectoralView(APIView):
+    """
+    API endpoint to get a list of votos associated with a given idProcesoElectoral.
+    """
+    def get(self, request, idProcesoElectoral, format=None):
+        # Filtramos los votos asociados al proceso electoral solicitado
+        votos = Voto.objects.filter(idProcesoElectoral=idProcesoElectoral)
+
+        if votos.exists():
+            # Si existen votos, los serializamos y los devolvemos
+            votos_serializer = VotoSerializer(votos, many=True)
+            return Response(votos_serializer.data, status=status.HTTP_200_OK)
+        else:
+            # Si no existen votos para el proceso electoral, devolvemos un error
+            return Response(
+                {'message': 'No votes found for the specified electoral process.'},
+                status=status.HTTP_404_NOT_FOUND
+            )

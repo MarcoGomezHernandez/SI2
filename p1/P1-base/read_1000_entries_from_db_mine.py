@@ -3,7 +3,7 @@
 # one by one. Measure the time requiered for the 1000 queries
 
 import time
-import os
+import os 
 import django
 
 

@@ -6,6 +6,7 @@
 # author: rmarabini
 import requests
 from django.conf import settings
+from rest_framework import status
 
 
 def verificar_censo(censo_data):
@@ -16,9 +17,9 @@ def verificar_censo(censo_data):
     """
     if bool(censo_data) is False:
         return False
-    url = f"{settings.RESTAPIBASEURL}/censo/"
+    url = f"{settings.RESTAPIBASEURL}censo/"
     response = requests.post(url, json=censo_data)
-    return response.status_code == 200
+    return response.status_code == status.HTTP_200_OK
 
 
 def registrar_voto(voto_dict):
@@ -27,9 +28,9 @@ def registrar_voto(voto_dict):
       plus de censo_id (numeroDNI) of the voter
     :return new voto info if succesful, None otherwise
     """
-    url = f"{settings.RESTAPIBASEURL}/voto/"
+    url = f"{settings.RESTAPIBASEURL}voto/"
     response = requests.post(url, json=voto_dict)
-    if response.status_code == 200:
+    if response.status_code == status.HTTP_200_OK:
         return response.json()
     print(f"Error: Registrando voto: status code {response.status_code}")
     return None
@@ -41,9 +42,9 @@ def eliminar_voto(idVoto):
     :return True if succesful,
      False otherwise
      """
-    url = f"{settings.RESTAPIBASEURL}/voto/{idVoto}/"
+    url = f"{settings.RESTAPIBASEURL}voto/{idVoto}/"
     response = requests.delete(url)
-    return response.status_code == 200
+    return response.status_code == status.HTTP_200_OK
 
 
 def get_votos_from_db(idProcesoElectoral):
@@ -51,8 +52,8 @@ def get_votos_from_db(idProcesoElectoral):
     :param idProcesoElectoral: id of the vote to be deleted
     :return list of votes found
      """
-    url = f"{settings.RESTAPIBASEURL}/proceso-electoral/{idProcesoElectoral}/"
+    url = f"{settings.RESTAPIBASEURL}proceso-electoral/{idProcesoElectoral}/"
     response = requests.get(url)
-    if response.status_code == 200:
+    if response.status_code == status.HTTP_200_OK:
         return response.json()
     return []

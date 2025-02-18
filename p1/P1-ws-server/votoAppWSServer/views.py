@@ -1,8 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from django.http import Http404
-from .serializers import CensoSerializer, VotoSerializer
+from .serializers import VotoSerializer
 from .models import Censo, Voto
 from django.forms.models import model_to_dict
 

@@ -52,7 +52,7 @@ def get_votos_from_db(idProcesoElectoral):
     :param idProcesoElectoral: id of the vote to be deleted
     :return list of votes found
      """
-    url = f"{settings.RESTAPIBASEURL}proceso-electoral/{idProcesoElectoral}/"
+    url = f"{settings.RESTAPIBASEURL}procesoelectoral/{idProcesoElectoral}/"
     response = requests.get(url)
     if response.status_code == status.HTTP_200_OK:
         return response.json()

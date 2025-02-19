@@ -11,3 +11,4 @@ class CensoSerializer(serializers.ModelSerializer):
 class VotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voto
+        fields = "__all__"

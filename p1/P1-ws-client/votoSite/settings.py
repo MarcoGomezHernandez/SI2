@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     # desactivate csrf middleware
@@ -144,3 +145,5 @@ DATABASE_SERVER_URL = os.environ.get("DATABASE_SERVER_URL")
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 RESTAPIBASEURL = os.environ.get("RESTAPIBASEURL")
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

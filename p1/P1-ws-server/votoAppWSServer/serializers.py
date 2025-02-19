@@ -11,4 +11,3 @@ class CensoSerializer(serializers.ModelSerializer):
 class VotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voto
-        exclude = ['marcaTiempo', 'codigoRespuesta']

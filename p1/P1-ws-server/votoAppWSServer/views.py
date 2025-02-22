@@ -62,9 +62,9 @@ class VotoView(APIView):
                 nombreCandidatoVotado=data.get("nombreCandidatoVotado"),
                 censo=censo
             )
-        except Exception as e:
+        except Exception:
             return Response(
-                {'message': 'Error creating Voto: {}'.format(e)},
+                {'message': 'Bad request, invalid data.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

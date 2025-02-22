@@ -23,7 +23,8 @@ urlpatterns = [
     # create "voto"
     path('voto/', VotoView.as_view(), name='voto'),
     # get list of "votos" associated with a given idProcesoElectoral
-    path('procesoelectoral/<str:idProcesoElectoral>/', ProcesoElectoralView.as_view(), name='procesoelectoral'),
+    path('procesoelectoral/<str:idProcesoElectoral>/',
+         ProcesoElectoralView.as_view(), name='procesoelectoral'),
     # delete "voto" with id id_voto
     path('voto/<str:id_voto>/', VotoView.as_view(), name='voto'),
-    ]
+]

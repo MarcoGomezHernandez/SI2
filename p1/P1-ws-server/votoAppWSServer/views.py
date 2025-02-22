@@ -11,6 +11,7 @@ class CensoView(APIView):
     API endpoint to collect censo information.
     and check if the person is in the censo.
     """
+
     def post(self, request, format=None):
         data = request.data
 
@@ -22,12 +23,17 @@ class CensoView(APIView):
         try:
             censo = Censo.objects.get(numeroDNI=numero_dni)
 
-            if (censo.nombre == nombre and censo.fechaNacimiento == fecha_nacimiento and censo.codigoAutorizacion == codigo_autorizacion):
-                return Response({'message': 'Datos encontrados en Censo.'}, status=status.HTTP_200_OK)
+            if ((censo.nombre == nombre)
+                    and (censo.fechaNacimiento == fecha_nacimiento)
+                    and (censo.codigoAutorizacion == codigo_autorizacion)):
+                return Response({'message': 'Datos encontrados en Censo.'},
+                                status=status.HTTP_200_OK)
             else:
-                return Response({'message': 'Datos no encontrados en Censo.'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'message': 'Datos no encontrados en Censo.'},
+                                status=status.HTTP_404_NOT_FOUND)
         except Censo.DoesNotExist:
-            return Response({'message': 'Datos no encontrados en Censo.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Datos no encontrados en Censo.'},
+                            status=status.HTTP_404_NOT_FOUND)
 
 
 class VotoView(APIView):
@@ -35,8 +41,10 @@ class VotoView(APIView):
     API endpoint to collect voto information.
     and save it in the database.
     """
+
     def post(self, request, format=None):
-        censo_id = request.data.get('censo_id')
+        data = request.data
+        censo_id = data.get('censo_id')
 
         try:
             censo = Censo.objects.get(pk=censo_id)
@@ -46,39 +54,40 @@ class VotoView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Crear un diccionario con los datos recibidos
-        voto_data = {
-            "idCircunscripcion": request.data.get("idCircunscripcion"),
-            "idMesaElectoral": request.data.get("idMesaElectoral"),
-            "idProcesoElectoral": request.data.get("idProcesoElectoral"),
-            "nombreCandidatoVotado": request.data.get("nombreCandidatoVotado"),
-            "censo": censo.pk  # Pasar solo el ID si el campo es una FK
-        }
-
-        # Pasar los datos al serializador
-        voto_serializer = VotoSerializer(data=voto_data)
-
-        if voto_serializer.is_valid():
-            voto_serializer.save(censo=censo)
-            # Convertimos el voto en un diccionario para retornarlo
-            voto_dict = voto_serializer.data
-            return Response(voto_dict, status=status.HTTP_200_OK)
-        else:
-            # Si los datos no son válidos, devolvemos un error
+        try:
+            voto = Voto.objects.create(
+                idCircunscripcion=data.get("idCircunscripcion"),
+                idMesaElectoral=data.get("idMesaElectoral"),
+                idProcesoElectoral=data.get("idProcesoElectoral"),
+                nombreCandidatoVotado=data.get("nombreCandidatoVotado"),
+                censo=censo
+            )
+        except Exception as e:
             return Response(
-                {'message': 'Bad request, invalid data.'},
+                {'message': 'Error creating Voto: {}'.format(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        if voto is None:
+            return Response(
+                {'message': 'Entry not found in Censo.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        voto_dict = model_to_dict(voto)
+        return Response(voto_dict, status=status.HTTP_200_OK)
 
     """
     API endpoint to delete a voto.
     """
+
     def delete(self, request, id_voto, format=None):
         # Intentamos obtener el voto a eliminar por su identificador
         try:
             voto = Voto.objects.get(id=int(id_voto))
         except Voto.DoesNotExist:
-            # Si el voto no existe, devolvemos un error con estado HTTP_404_NOT_FOUND
+            # Si el voto no existe, devolvemos un error con estado
+            # HTTP_404_NOT_FOUND
             return Response(
                 {'message': 'Voto not found.'},
                 status=status.HTTP_404_NOT_FOUND
@@ -96,8 +105,9 @@ class VotoView(APIView):
 
 class ProcesoElectoralView(APIView):
     """
-    API endpoint to get a list of votos associated with a given idProcesoElectoral.
+    API endpoint to get a list of votos of a given idProcesoElectoral.
     """
+
     def get(self, request, idProcesoElectoral, format=None):
         # Filtramos los votos asociados al proceso electoral solicitado
         votos = Voto.objects.filter(idProcesoElectoral=idProcesoElectoral)
@@ -107,8 +117,10 @@ class ProcesoElectoralView(APIView):
             votos_serializer = VotoSerializer(votos, many=True)
             return Response(votos_serializer.data, status=status.HTTP_200_OK)
         else:
-            # Si no existen votos para el proceso electoral, devolvemos un error
+            # Si no existen votos para el proceso electoral, devolvemos un
+            # error
             return Response(
-                {'message': 'No votes found for the specified electoral process.'},
+                {'message':
+                    'No votes found for the specified electoral process.'},
                 status=status.HTTP_404_NOT_FOUND
             )

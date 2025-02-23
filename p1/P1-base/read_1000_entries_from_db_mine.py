@@ -16,7 +16,8 @@ try:
     from votoApp.models import Censo
 
     # Leer las claves primarias de las primeras 1000 entradas de Censo
-    censo_pks = [censo_entrie.numeroDNI for censo_entrie in Censo.objects.all()[:1000]]
+    censo_pks = [censo_entrie.numeroDNI for
+                 censo_entrie in Censo.objects.all()[:1000]]
 
     # Medir el tiempo de inicio
     start_time = time.time()
@@ -29,7 +30,8 @@ try:
     end_time = time.time()
 
     # Mostrar los resultados
-    print(f"Tiempo invertido en buscar las 1000 entradas una a una: {end_time - start_time:.6f} segundos")
+    print("Tiempo invertido en buscar las 1000 entradas una a una: "
+          f"{end_time - start_time:.6f} segundos")
 
 except Exception as e:
     print(f"Error: {e}")

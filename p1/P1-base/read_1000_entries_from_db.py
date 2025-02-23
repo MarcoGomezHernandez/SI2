@@ -25,7 +25,8 @@ try:
     rows = cursor.fetchall()
 
     # Preparar para las busquedas individuales
-    search_query = 'SELECT * FROM censo WHERE "numeroDNI" = %s'  # Asumiendo que hay una columna 'id' para identificar las filas
+    search_query = 'SELECT * FROM censo WHERE "numeroDNI" = %s'
+    # Asumiendo que hay una columna 'id' para identificar las filas
 
     # Medir el tiempo de inicio
     start_time = time.time()
@@ -40,7 +41,8 @@ try:
     end_time = time.time()
 
     # Mostrar los resultados
-    print(f"Tiempo invertido en buscar las 1000 entradas una a una: {end_time - start_time:.6f} segundos")
+    print("Tiempo invertido en buscar las 1000 entradas una a una: "
+          f"{end_time - start_time:.6f} segundos")
 
 except Exception as e:
     print(f"Error: {e}")

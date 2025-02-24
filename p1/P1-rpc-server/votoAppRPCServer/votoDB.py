@@ -57,7 +57,7 @@ def eliminar_voto(idVoto):
     return True
 
 
-@rpc_method
+@rpc_method 
 def get_votos_from_db(idProcesoElectoral):
     """ Gets votes in the database correspondint to some electoral processs
     :param idProcesoElectoral: id of the vote to be deleted

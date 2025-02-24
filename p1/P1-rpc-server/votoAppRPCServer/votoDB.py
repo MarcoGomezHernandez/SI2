@@ -6,8 +6,11 @@
 # author: rmarabini
 "Interface with the dataabse"
 from votoAppRPCServer.models import Censo, Voto
+from modernrpc.core import rpc_method
+from django.forms.models import model_to_dict
 
 
+@rpc_method
 def verificar_censo(censo_data):
     """ Check if the voter is registered in the Censo
     :param censo_dict: dictionary with the voter data
@@ -20,22 +23,26 @@ def verificar_censo(censo_data):
     return True
 
 
+@rpc_method
 def registrar_voto(voto_dict):
     """ Register a vote in the database
     :param voto_dict: dictionary with the vote data (as provided by VotoForm)
       plus de censo_id (numeroDNI) of the voter
-    :return new voto info if succesful, None otherwise
+    :return new voto info if succesful, False otherwise
     """
     try:
         voto = Voto.objects.create(**voto_dict)
         # get default values from voto
         voto = Voto.objects.get(pk=voto.pk)
+        voto_a_devolver = model_to_dict(voto)
+        voto_a_devolver['marcaTiempo'] = str(voto.marcaTiempo)
     except Exception as e:
         print("Error: Registrando voto: ", e)
-        return None
-    return voto
+        return False
+    return voto_a_devolver
 
 
+@rpc_method
 def eliminar_voto(idVoto):
     """ Delete a vote in the database
     :param idVoto: id of the vote to be deleted
@@ -50,10 +57,18 @@ def eliminar_voto(idVoto):
     return True
 
 
+@rpc_method
 def get_votos_from_db(idProcesoElectoral):
     """ Gets votes in the database correspondint to some electoral processs
     :param idProcesoElectoral: id of the vote to be deleted
-    :return list of votes found
+    :return list of dicts with the info of each vote found
      """
     votos = Voto.objects.filter(idProcesoElectoral=idProcesoElectoral)
-    return votos
+
+    votos_a_devolver = []
+    for voto in votos:
+        voto_a_devolver = model_to_dict(voto)
+        voto_a_devolver['marcaTiempo'] = str(voto.marcaTiempo)
+        votos_a_devolver.append(voto_a_devolver)
+
+    return votos_a_devolver

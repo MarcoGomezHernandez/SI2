@@ -75,6 +75,8 @@ class VotoView(APIView):
             )
 
         voto_dict = model_to_dict(voto)
+        voto_dict['marcaTiempo'] = str(voto.marcaTiempo)
+
         return Response(voto_dict, status=status.HTTP_200_OK)
 
     """
@@ -124,3 +126,4 @@ class ProcesoElectoralView(APIView):
                     'No votes found for the specified electoral process.'},
                 status=status.HTTP_404_NOT_FOUND
             )
+

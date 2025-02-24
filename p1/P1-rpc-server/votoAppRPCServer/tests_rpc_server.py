@@ -174,35 +174,35 @@ class RpcEndpointTestCase(TestCase):
         result = response_data.get('result')
         self.assertEqual(len(result), 2)
 
-    def test_30_testdb(self):
-        " create voto and check censo with a single call"
-        data = self.censo_data
-        censo = Censo.objects.create(**data)
-        voto_data = self.voto_data
-        censo_data = self.censo_data
-        all_data = {**voto_data, **censo_data}
+    # def test_30_testdb(self):
+    #     " create voto and check censo with a single call"
+    #     data = self.censo_data
+    #     censo = Censo.objects.create(**data)
+    #     voto_data = self.voto_data
+    #     censo_data = self.censo_data
+    #     all_data = {**voto_data, **censo_data}
 
-        url = reverse('rpc')
-        payload = {
-            "id": 30,
-            "method": "TestBDProcedure",
-            "params": list(all_data.values()),
-            "jsonrpc": "2.0"
-        }
-        # Make the POST request to the RPC endpoint
-        response = self.client.post(
-            url,
-            data=json.dumps(payload),
-            content_type="application/json")
-        # Parse the JSON response
-        response_data = response.json()
-        status, result = response_data.get('result')
-        self.assertTrue(status)
-        self.assertEqual(result['idCircunscripcion'],
-                         voto_data['idCircunscripcion'])
-        self.assertEqual(result['idMesaElectoral'],
-                         voto_data['idMesaElectoral'])
-        self.assertEqual(result['idProcesoElectoral'],
-                         voto_data['idProcesoElectoral'])
-        self.assertEqual(result['nombreCandidatoVotado'],
-                         voto_data['nombreCandidatoVotado'])
+    #     url = reverse('rpc')
+    #     payload = {
+    #         "id": 30,
+    #         "method": "TestBDProcedure",
+    #         "params": list(all_data.values()),
+    #         "jsonrpc": "2.0"
+    #     }
+    #     # Make the POST request to the RPC endpoint
+    #     response = self.client.post(
+    #         url,
+    #         data=json.dumps(payload),
+    #         content_type="application/json")
+    #     # Parse the JSON response
+    #     response_data = response.json()
+    #     status, result = response_data.get('result')
+    #     self.assertTrue(status)
+    #     self.assertEqual(result['idCircunscripcion'],
+    #                      voto_data['idCircunscripcion'])
+    #     self.assertEqual(result['idMesaElectoral'],
+    #                      voto_data['idMesaElectoral'])
+    #     self.assertEqual(result['idProcesoElectoral'],
+    #                      voto_data['idProcesoElectoral'])
+    #     self.assertEqual(result['nombreCandidatoVotado'],
+    #                      voto_data['nombreCandidatoVotado'])

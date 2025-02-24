@@ -28,7 +28,7 @@ def registrar_voto(voto_dict):
     """ Register a vote in the database
     :param voto_dict: dictionary with the vote data (as provided by VotoForm)
       plus de censo_id (numeroDNI) of the voter
-    :return new voto info if succesful, False otherwise
+    :return new voto info if succesful, None otherwise
     """
     try:
         voto = Voto.objects.create(**voto_dict)
@@ -38,7 +38,7 @@ def registrar_voto(voto_dict):
         voto_a_devolver['marcaTiempo'] = str(voto.marcaTiempo)
     except Exception as e:
         print("Error: Registrando voto: ", e)
-        return False
+        return None
     return voto_a_devolver
 
 

@@ -14,7 +14,7 @@ from django.forms.models import model_to_dict
 def verificar_censo(censo_data):
     """ Check if the voter is registered in the Censo
     :param censo_dict: dictionary with the voter data
-                       (as provided by CensoForm)
+                       (as provided by CensoForm of the client)
     :return True or False if censo_data is not valid
     """
     if bool(censo_data) is False or not\
@@ -26,7 +26,8 @@ def verificar_censo(censo_data):
 @rpc_method
 def registrar_voto(voto_dict):
     """ Register a vote in the database
-    :param voto_dict: dictionary with the vote data (as provided by VotoForm)
+    :param voto_dict: dictionary with the vote data (as provided by VotoForm
+                                                        of the client)
       plus de censo_id (numeroDNI) of the voter
     :return new voto info if succesful, None otherwise
     """

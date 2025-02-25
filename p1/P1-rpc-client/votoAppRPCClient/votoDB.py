@@ -42,7 +42,7 @@ def eliminar_voto(idVoto):
 def get_votos_from_db(idProcesoElectoral):
     """ Gets votes in the database correspondint to some electoral processs
     :param idProcesoElectoral: id of the vote to be deleted
-    :return list of votes found
+    :return list of dicts with each vote found info
      """
     with ServerProxy(settings.RPCAPIBASEURL) as proxy:
         return proxy.get_votos_from_db(idProcesoElectoral)

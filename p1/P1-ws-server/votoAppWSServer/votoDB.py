@@ -11,7 +11,6 @@ from votoAppWSServer.models import Censo, Voto
 def verificar_censo(censo_data):
     """ Check if the voter is registered in the Censo
     :param censo_dict: dictionary with the voter data
-                       (as provided by CensoForm)
     :return True or False if censo_data is not valid
     """
     if bool(censo_data) is False or not\
@@ -22,7 +21,7 @@ def verificar_censo(censo_data):
 
 def registrar_voto(voto_dict):
     """ Register a vote in the database
-    :param voto_dict: dictionary with the vote data (as provided by VotoForm)
+    :param voto_dict: dictionary with the vote data
       plus de censo_id (numeroDNI) of the voter
     :return new voto info if succesful, None otherwise
     """

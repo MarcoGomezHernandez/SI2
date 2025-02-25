@@ -4,6 +4,7 @@ from rest_framework import status
 from .serializers import VotoSerializer
 from .models import Censo, Voto
 from django.forms.models import model_to_dict
+from .votoDB import verificar_censo, eliminar_voto, get_votos_from_db
 
 
 class CensoView(APIView):
@@ -15,23 +16,13 @@ class CensoView(APIView):
     def post(self, request, format=None):
         data = request.data
 
-        numero_dni = data.get('numeroDNI')
-        nombre = data.get('nombre')
-        fecha_nacimiento = data.get('fechaNacimiento')
-        codigo_autorizacion = data.get('codigoAutorizacion')
+        claves_esperadas = {"numeroDNI", "nombre", "fechaNacimiento",
+                            "codigoAutorizacion"}
 
-        try:
-            censo = Censo.objects.get(numeroDNI=numero_dni)
-
-            if ((censo.nombre == nombre)
-                    and (censo.fechaNacimiento == fecha_nacimiento)
-                    and (censo.codigoAutorizacion == codigo_autorizacion)):
-                return Response({'message': 'Datos encontrados en Censo.'},
-                                status=status.HTTP_200_OK)
-            else:
-                return Response({'message': 'Datos no encontrados en Censo.'},
-                                status=status.HTTP_404_NOT_FOUND)
-        except Censo.DoesNotExist:
+        if set(data.keys()) == claves_esperadas and verificar_censo(data):
+            return Response({'message': 'Datos encontrados en Censo.'},
+                            status=status.HTTP_200_OK)
+        else:
             return Response({'message': 'Datos no encontrados en Censo.'},
                             status=status.HTTP_404_NOT_FOUND)
 
@@ -84,25 +75,16 @@ class VotoView(APIView):
     """
 
     def delete(self, request, id_voto, format=None):
-        # Intentamos obtener el voto a eliminar por su identificador
-        try:
-            voto = Voto.objects.get(id=int(id_voto))
-        except Voto.DoesNotExist:
-            # Si el voto no existe, devolvemos un error con estado
-            # HTTP_404_NOT_FOUND
+        if eliminar_voto(id_voto):
+            return Response(
+                {'message': 'Voto deleted successfully.'},
+                status=status.HTTP_200_OK
+            )
+        else:
             return Response(
                 {'message': 'Voto not found.'},
                 status=status.HTTP_404_NOT_FOUND
             )
-
-        # Si el voto existe, lo eliminamos
-        voto.delete()
-
-        # Devolvemos una respuesta con el estado HTTP_200_OK
-        return Response(
-            {'message': 'Voto deleted successfully.'},
-            status=status.HTTP_200_OK
-        )
 
 
 class ProcesoElectoralView(APIView):
@@ -112,7 +94,7 @@ class ProcesoElectoralView(APIView):
 
     def get(self, request, idProcesoElectoral, format=None):
         # Filtramos los votos asociados al proceso electoral solicitado
-        votos = Voto.objects.filter(idProcesoElectoral=idProcesoElectoral)
+        votos = get_votos_from_db(idProcesoElectoral)
 
         if votos.exists():
             # Si existen votos, los serializamos y los devolvemos

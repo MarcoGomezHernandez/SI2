@@ -34,7 +34,7 @@ def main():
         try:
             voto = Voto.objects.get(id=voto_id) # Get the vote object
             voto.codigoRespuesta = '111' # Set the response code to '111'
-            voto.save() # Save the vote object
+
             print(f"Vote ID {voto_id} cancelled successfully.")
         except Voto.DoesNotExist:
             print(f"Vote ID {voto_id} does not exist.")

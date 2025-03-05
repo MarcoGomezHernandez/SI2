@@ -33,7 +33,7 @@ def main():
         print(f"Received vote cancellation request for vote ID: {voto_id}")
         try:
             voto = Voto.objects.get(id=voto_id) # Get the vote object
-            voto.codigoRespuesta = '111' # Set the response code to '111'
+            voto.update(codigoRespuesta='111') # Set the response code to '111'
 
             print(f"Vote ID {voto_id} cancelled successfully.")
         except Voto.DoesNotExist:

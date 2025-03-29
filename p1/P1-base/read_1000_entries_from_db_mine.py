@@ -2,7 +2,7 @@
 # then perform 1000 queries retrieving each one of the entries
 # one by one. Measure the time requiered for the 1000 queries
 
-import time
+import time 
 import os
 import django
 

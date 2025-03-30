@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'votoAppRPCClient.apps.AppConfig',
+    'votoAppWSServer.apps.AppConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -142,7 +143,5 @@ CACHES = {
 }
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-RPCAPIBASEURL = os.environ.get("RPCAPIBASEURL")
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

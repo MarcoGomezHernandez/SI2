@@ -46,7 +46,6 @@ class Voto(models.Model):
     marcaTiempo = models.DateTimeField(auto_now=True)
     codigoRespuesta = models.CharField(max_length=3,
                                        default=CodigoRespuesta.RESPUESTA_OK)
-    instancia = models.CharField(max_length=24, default=1)
 
     class Meta:
         # Garantiza que cada persona (numeroDNI) solo pueda emitir

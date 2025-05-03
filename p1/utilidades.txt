@@ -1,0 +1,117 @@
+ProxyRequests Off
+
+<Proxy balancer://SI2Cluster>
+  # Miembros del cluster (instancias de la app Django)
+  BalancerMember http://192.168.1.142:18000 route=Instance01
+  BalancerMember http://192.168.1.142:28000 route=Instance02
+  BalancerMember http://192.168.1.142:38000 route=Instance03
+
+  # Habilitar sticky session con la cookie ROUTEID
+  ProxySet stickysession=ROUTEID
+</Proxy>
+
+Header add Set-Cookie "ROUTEID=.%{BALANCER_WORKER_ROUTE}e; path=/" env=BALANCER_ROUTE_CHANGED
+
+# Configurar la ubicacion para balanceo de carga
+<Location /P1base>
+  Require all granted
+  ProxyPass balancer://SI2Cluster
+  ProxyPassReverse balancer://SI2Cluster
+</Location>
+
+# Configuracion del administrador del balanceador de carga
+<Location /balancer-manager>
+  SetHandler balancer-manager
+</Location>
+
+# Configuracion para manejar las redirecciones de Django correctamente
+RewriteEngine On
+
+# Redirecciones con /P1base se manejen correctamente
+RewriteCond %{REQUEST_URI} !^/P1base
+RewriteCond %{REQUEST_URI} !^/balancer-manager
+RewriteRule ^(.*)$ /P1base$1 [R,L]
+
+# Ajustar encabezado Location para evitar afectaciones
+Header edit Location ^/(?!balancer-manager)([^/]) /P1base/$1
+
+# Definir el nombre del servidor (ajústalo según tu configuración)
+ServerName 10.0.2.15
+---------------------------------------------------------------------------------------------------------------------------
+# IMPORTANT: this file should not be in a repository
+# To remove a file named env from a Git repository 
+# but keep it in the source (local system), follow these steps:
+# Remove the file from Git tracking but keep it locally
+## git rm --cached env
+# Add 'env' to .gitignore (so it's not tracked again)
+## echo "env" >> .gitignore
+# Commit the changes
+## git commit -m "Removed env from Git tracking and added to .gitignore"
+# Push the changes to the remote repository
+## git push
+# use sqlite 3
+##DATABASE_SERVER_URL=sqlite:///db.sqlite3
+# use postgres
+
+DATABASE_SERVER_URL='postgres://alumnodb:alumnodb@192.168.1.142:15432/voto'
+# Cambiar la ip por la ip de la interfaz wifi de nuestro host si lo ejecutamos en la máqina virtual
+# o dejarlo en localhost si lo ejecutamos en el host;
+# y el puerto 15432 si la BD está en la VM1 y 5432 si la BD está en el host
+
+# The client does not need to store data in any database
+# so let us define a sqlite in orden to avoid warning messages
+
+# Poner a True si estamos en un entorno de desarrollo
+DEBUG=True
+
+SECRET_KEY = 'django-insecure-alczftn)j1#$v%xmk@5j(n*px43c8kxgi_ua4%khc+t7g_)s9d'
+------------------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+GIT_WORK_TREE=/home/si2/repo/p1base git checkout -f
+
+# Reiniciar Gunicorn
+sudo systemctl restart gunicorn
+
+python $TARGET/manage.py migrate
+python $TARGET/manage.py collectstatic --noinput
+-----------------------------------------------------------------------------------------------------------------------------
+sudo nano ~/.bashrc
+------------------------------------------------------------------------------------------------------------------------------
+[Unit]
+Description=Gunicorn WSGI Application Server
+After=network.target
+
+[Service]
+User=si2
+Group=si2
+WorkingDirectory=/home/si2/SI2/p1/P1-base
+Environment="PATH=/home/si2/venv/bin"
+ExecStart=/home/si2/venv/bin/gunicorn \
+--workers 1 \
+--bind 0.0.0.0:8000 \
+votoSite.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+-------------------------------------------------------------------------------------------------------------------------------
+sudo -u postgres psql -c "CREATE DATABASE voto;"
+-------------------------------------------------------------------------------------------------------------------------------
+sudo systemctl daemon-reload
+sudo systemctl enable gunicorn
+sudo systemctl start gunicorn
+sudo systemctl status gunicorn
+-------------------------------------------------------------------------------------------------------------------------------
+sudo nano /etc/systemd/system/gunicorn.service
+-------------------------------------------------------------------------------------------------------------------------------
+export TARGET="/home/si2/repo/p1base/p1/P1-base"
+-------------------------------------------------------------------------------------------------------------------------------
+sudo systemctl restart apache2
+sudo systemctl status apache2
+-------------------------------------------------------------------------------------------------------------------------------
+sudo systemctl stop apache2
+-------------------------------------------------------------------------------------------------------------------------------
+nano /home/si2/repo/p1base.git/hooks/post-receive

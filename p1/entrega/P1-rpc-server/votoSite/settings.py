@@ -146,7 +146,6 @@ CACHES = {
     }
 }
 
-DATABASE_SERVER_URL = os.environ.get("DATABASE_SERVER_URL")
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

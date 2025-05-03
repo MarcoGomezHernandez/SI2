@@ -14,6 +14,7 @@
 	<td>Candidato Votado</td>
 	<td>Marca Tiempo</td>
 	<td>Codigo Respuesta</td>
+	<td>Instancia</td>
 	</tr>
 
 	{% for voto in result %}
@@ -24,6 +25,7 @@
 		<td> {{voto.nombreCandidatoVotado}} </td>
 		<td> {{voto.marcaTiempo}} </td>
 		<td> {{voto.codigoRespuesta}} </td>
+		<td> {{voto.instancia}} </td>
 	</tr>
 	{% endfor %}
 	</table>
